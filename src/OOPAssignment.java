@@ -50,9 +50,19 @@ public class OOPAssignment {
         }
         //딜러는 플레이어의 카드를 평가하고 결과를 점수로 반환한다.(점수가 높을 수록 좋음)
         //카드의 평가는 일반적인 포커의 랭크를 참고하여 높은 랭크에게 더 높은 점수를 준다.
+        int higherscore = 0;
+        String winner = "";
         for (int i = 0; i < playernum; i++) {
-            System.out.printf("%s의 점수: %d%n", player[i].nickname, d.calculate(player[i]));
+            int score = d.calculate(player[i]);
+            System.out.printf("%s의 점수: %d%n", player[i].nickname, score);
+            if (score > higherscore) {
+                higherscore = score;
+                winner = player[i].nickname;
+            } else if (score == higherscore) {
+                System.out.println("무승부");
+            }
         }
+        System.out.printf("승자: %s%n", winner);
         //매 게임마다 딜러는 각 플레이어의 카드를 평가하여 결과를 출력한다.
         //게임에서 승리한 플레이어는 상금 100원과 1승이 추가되고 나머지 플레이어는 상금 0원과 1패가 추가된다.
         //100번의 게임을 자동적으로 반복해서 실행하여 최종 결과를 승리의 수가 많은 플레이어부터 내림차순으로 정렬하여 화면에 출력한다.
@@ -248,8 +258,8 @@ class Card {
 class Player {
     String nickname;
     final int money = 10000;
-    int winningcount;
-    int losingcount;
+    int wincount;
+    int losecount;
     Card[] playerdeck = new Card[5];
 
     Player(String nickname) {
