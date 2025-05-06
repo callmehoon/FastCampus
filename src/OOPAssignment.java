@@ -22,8 +22,8 @@ public class OOPAssignment {
             scanner = new Scanner(System.in);
             playername = scanner.nextLine();
 
-            while (playername.length() > 20) {
-                System.out.print("닉네임이 너무 깁니다. 재설정 해주세요.(닉네임: 최대 20글자)> ");
+            while (playername.length() > 20 || playername.equals("")) {
+                System.out.print("닉네임이 너무 길거나, 입력되지 않았습니다. 재설정 해주세요.(닉네임: 최대 20글자)> ");
                 scanner = new Scanner(System.in);
                 playername = scanner.nextLine();
             }
@@ -38,52 +38,75 @@ public class OOPAssignment {
         System.out.println("게임을 시작합니다.");
         //카드덱 한벌을 가지고 있는 딜러 생성
         System.out.println();
-        Dealer d = new Dealer();
-        //딜러가 플레이어에게 서로 다른 5장의 카드를 나눠준다.
-        for (int i = 0; i < playernum; i++) {
-            System.out.printf("%s의 덱: %n", player[i].nickname);
-            for (int j = 0; j < player[i].playerdeck.length; j++) {
-                player[i].playerdeck[j] = d.pick();
-                System.out.println(player[i].playerdeck[j]);
-            }
-            System.out.println();
-        }
-        //딜러는 플레이어의 카드를 평가하고 결과를 점수로 반환한다.(점수가 높을 수록 좋음)
-        //카드의 평가는 일반적인 포커의 랭크를 참고하여 높은 랭크에게 더 높은 점수를 준다.
-        int[] score = new int[playernum];
-        int higherscore = 0;
-        int winner = -1; // 위너의 디폴트 값은 -1, 플레이어[i]가 0부터 시작되고, 승자의 번호를 winner에 저장하므로 무승부일때는 기본값인 -1이다.
-        boolean isDraw = false;
 
-        for (int i = 0; i < playernum; i++) {
-            score[i] = d.calculate(player[i]);
-            System.out.printf("%s의 점수: %d%n", player[i].nickname, score[i]);
-            if (score[i] > higherscore) {
-                higherscore = score[i];
-                winner = i;
-                isDraw = false;
-            } else if (score[i] == higherscore) {
-                isDraw = true;
-            }
-        }
-        //승무패 조건식
-        if (isDraw) {
-            System.out.println("승자: 무승부로 승자 없음");
-        } else {
-            player[winner].wincount++;
-            player[winner].money += 100;
-            System.out.printf("승자: %s%n", player[winner].nickname);
-
+        //매 게임마다 딜러는 각 플레이어의 카드를 평가하여 결과를 출력한다.
+        //100번의 게임을 자동적으로 반복해서 실행하여 최종 결과를 승리의 수가 많은 플레이어부터 내림차순으로 정렬하여 화면에 출력한다.
+        for (int round = 1; round <= 100; round++) {
+            Dealer d = new Dealer();
+            //딜러가 플레이어에게 서로 다른 5장의 카드를 나눠준다.
+            System.out.printf("Round: %d%n", round);
             for (int i = 0; i < playernum; i++) {
-                if (i != winner) {
-                    player[i].losecount++;
+
+                System.out.printf("%s의 덱: %n", player[i].nickname);
+                for (int j = 0; j < player[i].playerdeck.length; j++) {
+                    player[i].playerdeck[j] = d.pick();
+                    System.out.println(player[i].playerdeck[j]);
+                }
+                System.out.println();
+            }
+            //딜러는 플레이어의 카드를 평가하고 결과를 점수로 반환한다.(점수가 높을 수록 좋음)
+            //카드의 평가는 일반적인 포커의 랭크를 참고하여 높은 랭크에게 더 높은 점수를 준다.
+            int[] score = new int[playernum];
+            int higherscore = 0;
+            int winner = -1; // 위너의 디폴트 값은 -1, 플레이어[i]가 0부터 시작되고, 승자의 번호인 i를 winner에 저장하므로 무승부일때는 기본값인 -1이다.
+            boolean isDraw = false;
+            System.out.printf("-----Round: %d 결과-----%n", round);
+            for (int i = 0; i < playernum; i++) {
+                score[i] = d.calculate(player[i]);
+                System.out.printf("%s의 점수: %d%n", player[i].nickname, score[i]);
+                if (score[i] > higherscore) {
+                    higherscore = score[i];
+                    winner = i;
+                    isDraw = false;
+                } else if (score[i] == higherscore) {
+                    isDraw = true;
+                }
+            }
+            //승무패 조건식
+            //게임에서 승리한 플레이어는 상금 100원과 1승이 추가되고 나머지 플레이어는 상금 0원과 1패가 추가된다.
+            if (isDraw) {
+                System.out.println("승자: 무승부로 승자 없음");
+                System.out.println();
+            } else {
+                player[winner].wincount++;
+                player[winner].money += 100;
+                System.out.printf("승자: %s%n", player[winner].nickname);
+                System.out.println();
+                for (int i = 0; i < playernum; i++) {
+                    if (i != winner) {
+                        player[i].losecount++;
+                    }
+                }
+            }
+        }
+        System.out.println("@@@최종 결과@@@");
+        for (int i = 0; i < player.length - 1; i++) {
+            for (int j = i + 1; j < player.length; j++) {
+                if (player[i].wincount < player[j].wincount) { //플레이어별 승수 비교후 정렬
+                    Player tmp = player[i];
+                    player[i] = player[j];
+                    player[j] = tmp;
+                } else if (player[i].wincount == player[j].wincount && player[i].losecount > player[j].losecount) { // 승수 동일시, 패수 비교후 정렬
+                    Player tmp = player[i];
+                    player[i] = player[j];
+                    player[j] = tmp;
                 }
             }
         }
 
-        //매 게임마다 딜러는 각 플레이어의 카드를 평가하여 결과를 출력한다.
-        //게임에서 승리한 플레이어는 상금 100원과 1승이 추가되고 나머지 플레이어는 상금 0원과 1패가 추가된다.
-        //100번의 게임을 자동적으로 반복해서 실행하여 최종 결과를 승리의 수가 많은 플레이어부터 내림차순으로 정렬하여 화면에 출력한다.
+        for (int i = 0; i < player.length; i++) {
+            System.out.printf("%d등: %s, 승수: %d, 패수: %d, 게임머니: %d원%n", i + 1, player[i].nickname, player[i].wincount, player[i].losecount, player[i].money);
+        }
     }
 }
 
@@ -95,13 +118,11 @@ class Dealer {
 
     Dealer() {
         int i = 0;
-
         for (int k = Card.KIND_MAX; k > 0; k--) {
             for (int n = 0; n < Card.NUM_MAX; n++) {
                 cardArr[i++] = new Card(k, n + 1);
             }
         }
-
         shuffledeck();
     }
 
@@ -112,7 +133,6 @@ class Dealer {
     void shuffledeck() {
         for (int i = 0; i < cardArr.length; i++) {
             int r = (int) (Math.random() * CARD_NUM);
-
             Card tmp = cardArr[i];
             cardArr[i] = cardArr[r];
             cardArr[r] = tmp;
